@@ -31,5 +31,11 @@ pipeline{
                 }  
             }
         }
+      stage('Docker Build') {
+       agent any
+       steps {
+        sh 'docker build -t jagdish1983/spring-petclinic:latest .'
+      }
+    }
     }
 }
