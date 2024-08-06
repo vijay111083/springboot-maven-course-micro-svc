@@ -6,7 +6,7 @@ pipeline{
     stages{
         stage('checkout the code'){
             steps{
-                git url: 'https://github.com/vijay111083/springboot-maven-course-micro-svc.git', branch: 'master'
+                git url:'https://github.com/vijay111083/springboot-maven-course-micro-svc.git', branch: 'master'
             }
         }
         stage('build the code'){
@@ -14,29 +14,23 @@ pipeline{
                 sh 'mvn clean package'
             }
         }
-        stage("sonar quality check"){
-            steps{
-                script{
-                    withSonarQubeEnv(installationName: 'sonarqube', credentialsId: 'sonarqube') {
-                            sh 'mvn sonar:sonar '
-                    }
-
-                    timeout(time: 1, unit: 'HOURS') {
-                      def qg = waitForQualityGate()
-                      if (qg.status != 'OK') {
-                           error "Pipeline aborted due to quality gate failure: ${qg.status}"
-                      }
-                    }
-
-                }  
-            }
-        }
-        stage('Docker Build') {
-         agent any
-         steps {
-         sh 'docker build -t jagdish1983/spring-petclinic:latest .'
+      stage('Docker Build') {
+       agent any
+       steps {
+        sh 'docker build -t vijay111083/spring-petclinic:latest .'
       }
     }
+       stage('Docker Push') {
+      agent any
+      steps {
+        withCredentials([usernamePassword(credentialsId: 'vijay111083', passwordVariable: 'Vijay@111083', usernameVariable: 'dockerHubUser')]) {
+          sh "docker login -u ${env.dockerHubUser} -p ${env.dockerHubPassword}"
+          sh 'docker push vijay111083/spring-petclinic:latest'
+        }
+      }
+
+
+}
 }
 }
 
